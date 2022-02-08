@@ -74,15 +74,7 @@ Average: 18.4499 \ Variance: 3.3948 \ Standard deviation: 1.8425
 
  <br/>
 
-또한 실험결과를 그래프로 도시하면 다음과 같다. Random number의 개수 N과 그에 따른 average height의 증가속도를 비교하면 전자의 경우가 더 빠른것을 확인할 수 있다. 이러한 경향은 N이 증가함에 따라 더욱 뚜렷하게 나타난다. 결과적으로 실험결과를 통해 N과 average height가 추세적으로 log N의 관계를 갖는 것을 확인할 수 있다. 따라서 ‘In most (random) cases, the average depth of a BST is O(log n)’임을 추론할 수 있다.
 
- <br/>
-
-![IMG_7B2B938DE775-1](https://user-images.githubusercontent.com/83692797/140258485-66671f44-07e7-4843-a0ab-9795bb832b8c.jpeg)
-
-(Samples are from 100,000 iterations)
-
-<br/>
 
 ### Height must between lg N and N -1.
 
