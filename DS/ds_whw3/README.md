@@ -63,21 +63,6 @@ For HASH_PRIME: 11117, then the number of key comparisons: 7216
 
 <br/>
 
-2. Supose that we use “chaining” for our hash table, using hash() and HASH PRIME = M4. **After all the words are inserted in the hash table, if we search each and every word in words.dat “exactly once”, how many key comparisons are made in total?**
-
-<img src="https://user-images.githubusercontent.com/83692797/141724500-a63c2ae2-19d3-4abc-a691-fa81f8bf9af9.jpeg" alt="IMG_F0B1BCA57EE7-1" style="zoom:50%;" />
-
-위 그림을 참고하여, After all the words are inserted in the hash table, search each and every word “exactly once"인 경우, key comparisions 값은 다음과 같이 정리할 수 있다.
-
-$$
-\sum_{i=0}^{(HASH\,PRIME) -1}\,\sum_{j=0}^{c_i} j
-$$
-
-
-나아가 위의 공식을 적용한 실험결과를 통해 본 문제의 답은 7216임을 확인할 수 있다.
-
- <br/>
-
 # 3. How to compile and execute the project
 
 * To compile
