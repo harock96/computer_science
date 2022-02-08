@@ -1,222 +1,257 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "backend-bst.h"
+#include "backend-bst.h"     
 
 #define POOL_SIZE 10
 
+// record structure
 struct record {
   char name[3];
   char number[4];
-  struct record *left;
-  struct record *right;
+  struct record * left;
+  struct record * right;
 };
 
-void  print_name(struct record *);
-void  print_number(struct record *);
-int   compare(char key[3], struct record *);
+void print_name(struct record *);
+void print_number(struct record *);
 
-static struct record pool[POOL_SIZE];
-struct record *top = pool;
-struct record *data = NULL;
+// pool of memory
+static struct record pool[POOL_SIZE]; // static because pool is strictly private
+struct record * top=pool;  // a pointer variable for pool stack top.
 
-void init_pool()
+// comparison function for records
+int compare(char key[3], struct record *);
+
+// data
+struct record * data = NULL; // Initially NULL.
+
+
+void init_pool() // Initialize the pool; Use right instead of next!!!
 {
   int i;
-  struct record *r = pool;
+  struct record *r=pool;
   struct record *s;
 
-  pool[POOL_SIZE - 1].right = NULL;
-  for(i = 1; i < POOL_SIZE; i++) {
-    s = r++;
-    s->right = r;
+  pool[POOL_SIZE-1].right=NULL;  
+
+  for(i=1;i<POOL_SIZE;i++) {  
+    s=r++;
+    s->right=r;
   }
 }
 
-struct record * new_node()
+// Get a node from the pool. Returns NULL if pool is empty. 
+// When calling new_node(), make sure to check if it is NULL. 
+struct record * new_node()  
 {
   struct record *r;
-
-  if(top == NULL)
-    return (NULL);
-  r = top;
-  top = r->right;
-  return (r);
+  
+  if(top==NULL) 
+    return NULL;
+    
+  r=top;
+  top=r->right;  // Again, right instead of next.
+  return r;
 }
 
+// Push a node to the pool.
 void free_node(struct record *r)
 {
-  r->right = top;
-  top = r;
+  r->right=top;  // Again, right instead of next.
+  top=r;
 }
 
-void search(char name[3])
-{
-  struct record *r;
-  int result;
-  r = data;
 
-  while (r != NULL) {
-    if ((result = compare(name,r)) < 0)
-      r = r->left;
-    else if (result == 0) {
+/***********************
+Address Book by binary search tree
+**************************/
+
+void search(char name[3])  
+{
+  struct record *r; // Pointer to record being compared.
+                    //data or left/right field of a node.
+  int result;
+  r=data;
+
+  while (r!=NULL) {
+    if ((result=compare(name,r))<0)
+      r=r->left;
+    else if (result==0) {
       print_name(r);
       printf(" : ");
       print_number(r);
       printf(" was found.\n");
-      return ;
+      return;
     }
-    else
-      r = r->right;
+    else // case >0
+      r=r->right;
   }
   printf("Couldn't find the name.\n");
 }
 
 void add(char *name, char *number)
 {
-  struct record *trail;
-  struct record *cur;
-  struct record *new;
-  int           ret;
+  struct record *r;
+  struct record *p;
+  struct record *q = NULL;
 
-  trail = data;
-  cur = data;
-  while (cur)
-  {
-    ret = compare(name, cur);
-    if (ret <= 0)
-    {
-      trail = cur;
-      cur = cur->left;
-    }
-    else
-    {
-      trail = cur;
-      cur = cur->right;
-    }
-  }
-  new = new_node();
-  if (new == NULL)
+  r = new_node();
+
+  if (r==NULL)
   {
     printf("Can't add.  The pool is empty!\n");
-    return ;
+    return;
   }
-  strncpy(new->name, name, 3);
-  strncpy(new->number, number, 4);
-  new->left = NULL;
-  new->right = NULL;
+    
+  p = data;
+  
+  while (p!=NULL) {
+    if (compare(name,p)<=0)
+    {
+      q = p;
+      p = p->left;
+    }
+    else
+    {
+      q = p;
+      p = p->right;
+    }
+  }
+
+  (r->name)[0] = name[0];
+  (r->name)[1] = name[1];
+  (r->name)[2] = name[2];
+  (r->number)[0] = number[0];
+  (r->number)[1] = number[1];
+  (r->number)[2] = number[2];
+  (r->number)[3] = number[3];
+  r->left = NULL;
+  r->right = NULL;
+
   if (data == NULL)
-    data = new;
+  {
+    data = r;
+  }
+  else if (compare(name,q)<=0)
+  {
+    q->left = r;
+  }
   else
   {
-    ret = compare(new->name, trail);
-    if (ret <= 0)
-      trail->left = new;
-    else
-      trail->right = new;
+    q->right = r;
   }
   printf("The name was successfully added!\n");
 }
 
-static void  link_node(struct record *trail, struct record *cur)
-{
-  struct record *suc_trail;
-  struct record *suc;
-  int           ret;
-
-  if (cur->left && cur->right) // has two children
-  {
-    suc_trail = cur->right;
-    suc = cur->right;
-    while (suc->left)
-    {
-      suc_trail = suc;
-      suc = suc->left;
-    }
-    strncpy(cur->name, suc->name, 3);
-    strncpy(cur->number, suc->number, 4);
-    if (suc == cur->right) // successor has no child
-      cur->right = suc->right;
-    else
-    {
-      if (suc->right)
-        suc_trail->left = suc->right;
-      else
-        suc_trail->left = NULL;
-    }
-    free_node(suc);
-  }
-  else if (cur->left || cur->right) // has a child
-  {
-    if (trail->left == cur)
-    {
-      if (cur->left)
-        trail->left = cur->left;
-      else
-        trail->left = cur->right;
-    }
-    else
-    {
-      if (cur->left)
-        trail->right = cur->left;
-      else
-        trail->right = cur->right;
-    }
-    free_node(cur);
-  }
-  else // has no child
-  {
-    if (trail->left == cur)
-      trail->left = NULL;
-    else
-      trail->right = NULL;
-    free_node(cur);
-  }
-}
-
 void delete(char name[3])
 {
-  struct record *trail;
-  struct record *cur;
-  int           ret;
+  struct record *p;
+  struct record *r;
+  struct record *s;
+  struct record *t;
+  int result;
+  p=data;
+  r=data;
 
-  trail = data;;
-  cur = data;
-  while (cur)
-  {
-    ret = compare(name, cur);
-    if (ret < 0)
+  while (r!=NULL) 
+  {   
+    result = compare(name,r);
+    if (result<0)
     {
-      trail = cur;
-      cur = cur->left;
+      p=r;
+      r=r->left;
     }
-    else if (ret == 0)
-      break ;
-    else
+    else if (result==0)
+      break;
+    else 
     {
-      trail = cur;
-      cur = cur->right;
+      p=r;
+      r=r->right;
     }
   }
-  if (cur == NULL)
+
+  if (r == NULL)
   {
     printf("Couldn't find the name.\n");
-    return ;
+    return;
   }
-  link_node(trail, cur);
+
+  if (r->left == NULL && r->right == NULL) // no child
+  {
+    if (p->left == r)
+      p->left = NULL;
+    else if (p->right == r)
+      p->right = NULL;
+    else // p == r
+      data = NULL;
+    free_node(r);
+  }
+
+  else if (r->left != NULL && r->right == NULL) // only left child
+  {
+    if (p->left == r)
+      p->left = r->left;
+    else if (p->right == r)
+      p->right = r->left;
+    else
+      data = r->left;
+    free_node(r);
+  }
+
+  else if (r->left == NULL && r->right != NULL) // only right child
+  {
+    if (p->left == r)
+      p->left = r->right;
+    else if (p->right == r)
+      p->right = r->right;
+    else
+      data = r->right;
+    free_node(r);
+  }
+
+  else if (r->left != NULL && r->right != NULL) // 2 children
+  {
+    t = r->right;
+    s = r->right;
+    while (s->left != NULL)
+    {
+      t = s;
+      s = s->left;
+    }
+    strncpy(r->name, s->name, 3);
+    strncpy(r->number, s->number, 4);
+
+    if (s == r->right)
+      r->right = s->right;
+    else
+    {
+      if (s->right)
+        t->left = s->right;
+      else
+        t->left = NULL;
+    }
+    
+    free_node(s);
+  }
   printf("The name was deleted.\n");
 }
 
+/* Just a wrapper of strncmp().
+Regard strncmp(a,b) as a-b.
+Negative value if key is less than r.
+​0​ if key and r are equal.
+Positive value if key is greater than r. */
 int compare(char key[3], struct record *r)
 {
-  return (strncmp(key, r->name, 3));
+  return strncmp(key, r->name, 3);
 }
+
 
 void print_data(char * s, int n)
 {
   int i;
-
-  for (i = 0; i < n; i++)
+  for (i=0; i<n; i++)
     putchar(s[i]);
 }
 
@@ -230,39 +265,41 @@ void print_number(struct record *r)
   print_data(r->number, 4);
 }
 
-void print_inorder(struct record *cur)
+void print_inorder(struct record *t)
 {
-  if (cur == NULL)
-    return ;
-  print_inorder(cur->left);
-  print_name(cur);
+  if (t==NULL)
+    return;
+  print_inorder(t->left);
+  print_name(t);
   printf(" : ");
-  print_number(cur);
+  print_number(t);
   printf("\n");
-  print_inorder(cur->right);
+  print_inorder(t->right);
 }
 
-void print_list()
+void print_list()  
 {
   print_inorder(data);
 }
 
-int height(struct record *cur)
+int height(struct record *t)
 {
-  int left;
-  int right;
+  int lefth; 
+  int righth; 
 
-  if (cur == NULL)
-    return (-1);
-  left = height(cur->left);
-  right = height(cur->right);
-  if (left > right)
-    return (left + 1);
+  if (t==NULL)
+    return -1;
+
+  lefth = height(t->left);
+  righth = height(t->right);
+
+  if (lefth < righth)
+    return righth+1;
   else
-    return (right + 1);
+    return lefth+1;
 }
 
-void print_height()
+void print_height()  
 {
   printf("The Address Book BST's height is %d.\n", height(data));
 }
