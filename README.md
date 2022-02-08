@@ -36,4 +36,5 @@
 # NLP
 
 | Project Name | Topic | Stack | 
+| :-------- | :------| :---: | 
 | [NLP Project](https://github.com/harock96/Computer_Science/tree/main/DB/db_hw3) | `Classification` | Python |
