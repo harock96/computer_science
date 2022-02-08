@@ -5,7 +5,6 @@
 | Course | Data Base                |
 | Stacks | SQL, MariaDB, Java, JDBC, Ecplise |
 | Topics | `JDBC` `Programmatic Query` |
-| Report | [Notion Link](https://www.notion.so/24siefil/MariaDB-Java-Connector-63dbfdd78b864b9291dfcd94ae2bca66) |
 
  <br/>
 
