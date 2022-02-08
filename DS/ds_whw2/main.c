@@ -1,206 +1,220 @@
-// Written Homework 2
-// B617065 신성우
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>  
 #include <time.h>
 #include <math.h>
-#include <assert.h>
 
-struct record
-{
-  int           nbr;
-  struct record *left;
-  struct record *right;
+#define POOL_SIZE 500
+
+// record structure
+struct record {
+  int number;
+  struct record * left;
+  struct record * right;
 };
 
-struct record *data = NULL;
+// pool of memory
+static struct record pool[POOL_SIZE]; // static because pool is strictly private
+struct record * top=pool;  // a pointer variable for pool stack top.
 
-void  gen_n_rand_nbr(int n, int *rand_nbr_n)
+// comparison function for records
+int compare(int key, struct record *);
+
+// data
+struct record * data = NULL; // Initially NULL.
+
+
+void init_pool() // Initialize the pool; Use right instead of next!!!
 {
   int i;
+  struct record *r=pool;
+  struct record *s;
 
-  i = 0;
-  while (i < n)
-  {
-    rand_nbr_n[i] = rand() % n + 1;
-    ++i;
+  pool[POOL_SIZE-1].right=NULL;  
+
+  for(i=1;i<POOL_SIZE;i++) {  
+    s=r++;
+    s->right=r;
   }
 }
 
-struct record *get_new_node(int nbr_to_add)
+// Get a node from the pool. Returns NULL if pool is empty. 
+// When calling new_node(), make sure to check if it is NULL. 
+struct record * new_node()  
 {
-  struct record *new;
-
-  new = (struct record *)malloc(sizeof(struct record) * 1);
-  if (new == NULL)
-    exit(1);
-  new->nbr = nbr_to_add;
-  new->left = NULL;
-  new->right = NULL;
-  return (new);
+  struct record *r;
+  
+  if(top==NULL) 
+    return NULL;
+    
+  r=top;
+  top=r->right;  // Again, right instead of next.
+  return r;
 }
 
-void  add(int nbr_to_add)
+// Push a node to the pool.
+void free_node(struct record *r)
 {
-  struct record *trail;
-  struct record *cur;
-  struct record *new;
-  int           tmp;
+  r->right=top;  // Again, right instead of next.
+  top=r;
+}
 
-  trail = data;
-  cur = data;
-  while (cur)
+void add(int number)
+{
+  struct record *r;
+  struct record *p;
+  struct record *q = NULL;
+  r = new_node();
+
+  if (r==NULL)
   {
-    tmp = nbr_to_add - cur->nbr; // compare(name, cur);
-    if (tmp <= 0)
+    return;
+  }
+
+  p = data;
+  
+  while (p!=NULL) {
+    if (compare(number,p)<=0)
     {
-      trail = cur;
-      cur = cur->left;
+      q = p;
+      p = p->left;
     }
     else
     {
-      trail = cur;
-      cur = cur->right;
+      q = p;
+      p = p->right;
     }
   }
-  new = get_new_node(nbr_to_add);
-  if (data == NULL)
-    data = new;
-  else
-  {
-    tmp = new->nbr - trail->nbr; // compare(new->name, trail);
-    if (tmp <= 0)
-      trail->left = new;
-    else
-      trail->right = new;
-  }
-}
 
-void  init_bst(int n, int *rand_nbr_n)
-{
-  int i;
-
-  i = 0;
-  while (i < n)
-  {
-    add(rand_nbr_n[i]);
-    ++i;
-  }
-}
-
-int  get_height(struct record *data)
-{
-  int left;
-  int right;
+  r->number = number;
+  r->left = NULL;
+  r->right = NULL;
 
   if (data == NULL)
-    return (-1);
-  left = get_height(data->left);
-  right = get_height(data->right);
-  if (left > right)
-    return (left + 1);
-  else
-    return (right + 1);
-}
-
-void  free_bst(struct record *node)
-{
-  if (node)
   {
-    free_bst(node->left);
-    free_bst(node->right);
-    free(node);
+    data = r;
+  }
+  else if (compare(number,q)<=0)
+  {
+    q->left = r;
+  }
+  else
+  {
+    q->right = r;
   }
 }
 
-void  process_n(int n, int iter, int *rand_nbr_n, int *height_n)
+int compare(int key, struct record *r)
+{
+  if (key > r->number)
+    return 1;
+  else if (key < r->number)
+    return -1;
+  else
+    return 0;
+}
+
+int height(struct record *t)
+{
+  int lefth; 
+  int righth; 
+
+  if (t==NULL)
+    return -1;
+
+  lefth = height(t->left);
+  righth = height(t->right);
+
+  if (lefth < righth)
+    return righth+1;
+  else
+    return lefth+1;
+}
+
+void print_height()  
+{
+  printf("BST's height is %d.\n", height(data));
+}
+
+int rand_num[POOL_SIZE];
+
+void generate(int n)
 {
   int i;
-
-  i = 0;
-  while (i < iter)
+  //srand((time(NULL)));
+  for(i=0; i<n; ++i)
   {
-    srand((unsigned int)i);
-    gen_n_rand_nbr(n, rand_nbr_n);
-    init_bst(n, rand_nbr_n);
-    height_n[i] = get_height(data);
-    assert(((log((double)n) / log((double)2)) <= height_n[i]) && \
-          (height_n[i] <= n - 1));
-    free_bst(data);
-    data = NULL;
-    ++i;
+    rand_num[i] = rand() % 10;
   }
 }
 
-void  print_result_n(int n, int iter, int *height_n)
+void print_generate(int n)
 {
-  int                 i;
-  unsigned long long  sum;
-  double              avg;
-  double              var;
-  double              std_dev;
-
-  printf("About height of BST for N = %d\n", n);
-  i = 0;
-  sum = 0;
-  while (i < iter)
+  int i;
+  for(i=0; i<n; i++)
   {
-    sum += (unsigned long long)height_n[i];
-    ++i;
+    printf("Random data %d: %d ", i, rand_num[i]);
   }
-  avg = sum / (double)iter;
-  printf("Average: %.4lf \\ ", avg);
-  i = 0;
-  var = 0;
-  while (i < iter)
-  {
-    var += pow((double)(height_n[i]) - avg, 2);
-    ++i;
-  }
-  var /= iter;
-  printf("Variance: %.4lf \\ ", var);
-  std_dev = sqrt(var);
-  printf("Standard deviation: %.4lf\n", std_dev);
 }
 
-int main(void)
+void insert_data(int n)
 {
-  int rand_nbr_50[50];
-  int rand_nbr_100[100];
-  int rand_nbr_200[200];
-  int rand_nbr_500[500];
-  int height_50[100000];
-  int height_100[100000];
-  int height_200[100000];
-  int height_500[100000];
-
-  printf("==================== Result for 1,000 iterations ====================\n");
-  process_n(50, 1000, rand_nbr_50, height_50);
-  print_result_n(50, 1000, height_50);
-  process_n(100, 1000, rand_nbr_100, height_100);
-  print_result_n(100, 1000, height_100);
-  process_n(200, 1000, rand_nbr_200, height_200);
-  print_result_n(200, 1000, height_200);
-  process_n(500, 1000, rand_nbr_500, height_500);
-  print_result_n(500, 1000, height_500);
-  printf("==================== Result for 10,000 iterations ====================\n");
-  process_n(50, 10000, rand_nbr_50, height_50);
-  print_result_n(50, 10000, height_50);
-  process_n(100, 10000, rand_nbr_100, height_100);
-  print_result_n(100, 10000, height_100);
-  process_n(200, 10000, rand_nbr_200, height_200);
-  print_result_n(200, 10000, height_200);
-  process_n(500, 10000, rand_nbr_500, height_500);
-  print_result_n(500, 10000, height_500);
-  printf("==================== Result for 100,000 iterations ====================\n");
-  process_n(50, 100000, rand_nbr_50, height_50);
-  print_result_n(50, 100000, height_50);
-  process_n(100, 100000, rand_nbr_100, height_100);
-  print_result_n(100, 100000, height_100);
-  process_n(200, 100000, rand_nbr_200, height_200);
-  print_result_n(200, 100000, height_200);
-  process_n(500, 100000, rand_nbr_500, height_500);
-  print_result_n(500, 100000, height_500);
-  return (0);
+  int i;
+  for(i=0; i<n; i++)
+  {
+    add(rand_num[i]);
+  }
 }
+
+void free_all(struct record *r)
+{
+  if (r!=NULL)
+  {
+    free_all(r->left);
+    free_all(r->right);
+    free_node(r);
+  }
+  data = NULL;
+}
+  
+void process(int number, int n)
+{
+  int height_tmp[number];
+  int height_cnt[n];
+  double sum = 0;
+  double var = 0;
+  double ave;
+  double std;
+  int i;
+  int j;
+  srand((time(NULL)));
+  for(i=0; i<number; i++)
+  {
+    init_pool();
+    generate(n);
+    insert_data(n);
+    height_tmp[i] = height(data);
+    sum += height(data);
+    free_all(data);
+  }
+  ave = sum/number;
+    
+  for (i=0; i<number; i++)
+    var += pow((double)(height_tmp[i] - ave), 2);
+  var = var/number;
+  std = sqrt(var);
+  printf("Iteration:%d\nN:%d\nSum height of BST:%.0f\nAverage height of BST:%.2lf\nVariance height of BST:%.2lf\nStandard deviation height of BST:%.2lf\n", number, n, sum, ave, var,std);
+}
+
+int main()
+{
+  process(10000, 500);
+  /*process(10000, 100);
+  process(10000, 200);
+  process(10000, 500);
+  process(1000000, 50);
+  process(1000000, 100);
+  process(1000000, 200);
+  process(1000000, 500);*/
+}
+    
