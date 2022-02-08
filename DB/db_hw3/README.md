@@ -5,7 +5,6 @@
 | Course | Data Base                |
 | Stacks | SQL, MariaDB, Java, JDBC, Ecplise, Spring Boot, REST Interface |
 | Topics | `JDBC` `Programmatic Query` |
-| Report | [Notion Link](https://www.notion.so/24siefil/Spring-Boot-and-REST-Interface-7c34698285124789847ce861f652a326) |
 
  <br/>
 
