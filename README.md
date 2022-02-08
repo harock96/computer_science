@@ -6,7 +6,7 @@
 
 # Data Structures
 
-| Project Name | Topic | Stack | Difficulty |
+| Project Name | Topic | Stack | 
 | :-------- | :------| :---: | :-: |
 | [Address Book - 1](https://github.com/24siefil/Computer_Science/tree/main/DS/ds_hw1) | `Array` | C |
 | [Address Book - 2](https://github.com/24siefil/Computer_Science/tree/main/DS/ds_hw2) | `Quick Sort` | C |
@@ -25,7 +25,7 @@
 
 # Database
 
-| Project Name | Topic | Stack | Difficulty |
+| Project Name | Topic | Stack | 
 | :-------- | :------| :---: | :-: |
 | [SQL Practice with Maria DB](https://www.notion.so/24siefil/Maria-DB-and-SQL-Practice-75bb110d7245478a980d25cde6f28e88) | `RDBMS` | SQL |
 | [Programmatic Query with MariaDB Java Connector](https://github.com/24siefil/Computer_Science/tree/main/DB/db_hw2) | `JDBC` | Java |
