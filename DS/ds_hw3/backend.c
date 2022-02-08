@@ -7,24 +7,31 @@
 void print_name(struct record *);
 void print_number(struct record *);
 void print_data(char *, int);
-
-struct record *data = NULL;
+ 
+// data
+struct record * data = NULL; // Initially NULL.
 
 void init()
 {
   init_pool();
 }
+ 
 
 void add(char *name, char *number)
 {
+  // Error Message for overflow:
+  // printf("Can't add.  The address book is full!\n");
+  
   struct record *new;
 
   new = new_node();
+
   if (new == NULL)
   {
     printf("Can't add.  The address book is full!\n");
-    return ;
+    return;
   }
+
   (new->name)[0] = name[0];
   (new->name)[1] = name[1];
   (new->name)[2] = name[2];
@@ -32,34 +39,43 @@ void add(char *name, char *number)
   (new->number)[1] = number[1];
   (new->number)[2] = number[2];
   (new->number)[3] = number[3];
-  if (data == NULL)
+  
+  if (data == NULL) 
   {
     new->next = NULL;
     data = new;
   }
-  else
+  else 
   {
     new->next = data;
     data = new;
   }
 }
 
+
+/* Just a wrapper of strncmp(), except for the case r is NULL.
+Regard strncmp(a,b) as a-b, that is,
+Negative value if key is less than r.
+​0​ if key and r are equal.
+Positive value if key is greater than r. */
 int compare(char key[3], struct record *r)
 {
   if (r == NULL)
-    return (-1);
+    return -1;
   else
     return (strncmp(key, r->name, 3));
 }
 
+
+
 void search(char name[3])
 {
-  struct record *r = data;
+  struct record *r=data;
   int result;
 
-  while (r != NULL && (result = compare(name, r)) != 0)
-    r = r->next;
-  if (r == NULL)
+  while(r!=NULL && (result=compare(name,r))!=0)
+    r=r->next;
+  if(r==NULL)
     printf("Couldn't find the name.\n");
   else {
     print_name(r);
@@ -69,61 +85,75 @@ void search(char name[3])
   }
 }
 
+
 void delete(char name[3])
 {
-  struct record *node_to_del;
-  struct record *node_to_reconnect;
-  int           result;
-
-  node_to_del = data;
-  while (node_to_del && (result = compare(name, node_to_del)) != 0)
-    node_to_del = node_to_del->next;
-  if (node_to_del == NULL)
-  {
+  int result;
+  struct record *p=data;
+  struct record *r=p->next;
+  if (p==NULL) {
     printf("Couldn't find the name.\n");
-    return ;
+    return;
   }
-  node_to_reconnect = data;
-  while (node_to_reconnect)
-  {
-    if (node_to_reconnect->next == node_to_del)
-      break ;
-    node_to_reconnect = node_to_reconnect->next;
+
+  else if (compare(name,p) == 0) {
+    printf("The name was deleted.\n");
+    data = data->next;
   }
-  node_to_reconnect->next = node_to_del->next;
-  free_node(node_to_del);
-  printf("The name was deleted.\n");
+  
+  else {
+    while(r!=NULL && (result=compare(name,r))!=0) 
+    {
+      p = r;
+      r = r->next;
+    }
+    if(r==NULL) {
+      printf("Couldn't find the name.\n");
+    }
+    else 
+    {
+      p->next = r->next;
+      free_node(r);
+      printf("The name was deleted.\n");
+    }
+  }
+    // Error Message:
+    // printf("Couldn't find the name.\n");
+
 }
 
+
+// Prints ith name.
 void print_name(struct record *r)
 {
   print_data(r->name, 3);
 }
 
+// Prints ith number.
 void print_number(struct record *r)
 {
   print_data(r->number, 4);
 }
 
-void print_data(char *s, int n)
+void print_data(char * s, int n)
 {
   int i;
-
-  for (i = 0; i < n; ++i)
+  for (i=0; i<n; i++)
     putchar(s[i]);
 }
 
 void print_list()
 {
-  struct record *cur;
 
-  cur = data;
-  while (cur)
+  struct record *r=data;
+
+  while (r!=NULL) 
   {
-    print_name(cur);
+    print_name(r);
     printf(" : ");
-    print_number(cur);
+    print_number(r);
     printf("\n");
-    cur = cur->next;
+    r=r->next;
   }
+  
 }
