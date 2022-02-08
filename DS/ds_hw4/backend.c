@@ -7,67 +7,85 @@
 void print_name(struct record *);
 void print_number(struct record *);
 void print_data(char *, int);
-int  compare(char key[3], struct record *);
 
-struct record *data = NULL;
+// comparison function for records
+int compare(char key[3], struct record *);
+
+// data
+struct record * data = NULL; // Initially NULL.
 
 void init()
 {
   init_pool();
 }
 
-static void link_node(char *name, struct record *new)
-{
-  struct record *cur;
-  struct record *prv;
-  int           result;
-
-  if (data == NULL)
-  {
-    new->next = NULL;
-    data = new;
-    return ;
-  }
-  prv = NULL;
-  cur = data;
-  while (cur && (result = compare(name, cur)) > 0)
-  {
-    prv = cur;
-    cur = cur->next;
-  }
-  if (prv == NULL)
-  {
-    new->next = data;
-    data = new;
-    return ;
-  }
-  new->next = cur;
-  prv->next = new;
-}
-
 void add(char *name, char *number)
 {
   struct record *new;
-
   new = new_node();
+  struct record *cur = data;
+  struct record *pre = NULL;
+
   if (new == NULL)
   {
     printf("Can't add.  The address book is full!\n");
-    return ;
+    return;
   }
-  strncpy(new->name, name, 3);
-  strncpy(new->number, number, 4);
-  link_node(name, new);
+
+  (new->name)[0] = name[0];
+  (new->name)[1] = name[1];
+  (new->name)[2] = name[2];
+  (new->number)[0] = number[0];
+  (new->number)[1] = number[1];
+  (new->number)[2] = number[2];
+  (new->number)[3] = number[3];
+  
+  if (data == NULL) 
+  {
+    new->next = NULL;
+    data = new;
+    return;
+  }
+
+  while (compare(name, cur) > 0)
+  {
+    pre = cur;
+    cur = cur->next;
+  }
+
+  if (pre==NULL) {
+    new->next = data;
+    data = new;
+    return;
+  }
+  pre->next = new;
+  new->next = cur;
 }
 
-void search(char name[3])
-{
-  struct record *r = data;
-  int result;
 
-  while(r != NULL && (result = compare(name, r)) != 0)
-    r = r->next;
-  if(r == NULL)
+/* Just a wrapper of strncmp(), except for the case r is NULL.
+Regard strncmp(a,b) as a-b, that is,
+Negative value if key is less than r.
+​0​ if key and r are equal.
+Positive value if key is greater than r. */
+
+int compare(char key[3], struct record *r)
+{
+  if (r==NULL)
+    return -1;
+  else {
+    return strncmp(key, r->name, 3);
+  }
+}
+
+
+void search(char name[3])  
+{
+  struct record *r=data;
+  int result;
+  while(r!=NULL && (result=compare(name,r))!=0)
+    r=r->next;
+  if(r==NULL)
     printf("Couldn't find the name.\n");
   else {
     print_name(r);
@@ -77,69 +95,73 @@ void search(char name[3])
   }
 }
 
+
 void delete(char name[3])
 {
-  struct record *cur;
-  struct record *prv;
-  int           result;
+  struct record *cur=data;
+  struct record *pre=NULL;
 
-  prv = NULL;
-  cur = data;
-  while (cur && (result = compare(name, cur)) != 0)
-  {
-    prv = cur;
-    cur = cur->next;
-  }
   if (cur == NULL)
   {
     printf("Couldn't find the name.\n");
-    return ;
+    return;
   }
-  if (prv == NULL)
+
+  while (compare(name, cur) != 0)
+  {
+    pre = cur;
+    cur = cur->next;
+  }
+
+  if (pre == NULL)
+  {
     data = data->next;
+  }
   else
-    prv->next = cur->next;
+  {
+    pre->next = cur->next;
+  }
   free_node(cur);
   printf("The name was deleted.\n");
 }
 
-int compare(char key[3], struct record *r)
-{
-  if (r == NULL)
-    return (-1);
-  else
-    return strncmp(key, r->name, 3);
-}
 
+/* Just a wrapper of strncmp(), except for the case r is NULL. 
+Regard strncmp(a,b) as a-b, that is,
+Negative value if key is less than r.
+​0​ if key and r are equal.
+Positive value if key is greater than r. */
+
+// Prints ith name.
 void print_name(struct record *r)
 {
   print_data(r->name, 3);
 }
 
+// Prints ith number.
 void print_number(struct record *r)
 {
   print_data(r->number, 4);
 }
 
-void print_data(char *s, int n)
+void print_data(char * s, int n)
 {
   int i;
-
-  for (i = 0; i < n; ++i)
+  for (i=0; i<n; i++)
     putchar(s[i]);
 }
 
 void print_list()
 {
-  struct record *cur;
+  struct record *cur=data;
 
-  cur = data;
-  while (cur)
-  {
+  while (cur!=NULL) {
+
     print_name(cur);
     printf(" : ");
     print_number(cur);
     printf("\n");
-    cur = cur->next;
+    cur=cur->next;
   }
 }
+
