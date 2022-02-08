@@ -1,115 +1,70 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+#define HASH_PRIME 11117
 
-void  read_file(char words[5757][5])
+int hash_record[HASH_PRIME];
+
+void init_record()
 {
-  FILE  *fp;
-  int   i;
-  char  buf[5];
-  char  dummy[100];
-
-  fp = fopen("words.dat", "r");
-  if (fp == NULL)
-    exit(1);
-  i = 0;
-  while (i < 4)
-  {
-    fgets(dummy, 100, fp);
-    ++i;
-  }
-  i = 0;
-  while (i < 5757)
-  {
-    fgets(words[i], 6, fp);
-    fgets(dummy, 100, fp);
-    ++i;
-  }
-  fclose(fp);
+  int i;
+  for (i=0; i<HASH_PRIME; i++)
+    hash_record[i] = 0;
 }
 
-int get_hash(char key[5], int hash_prime)
+int hash(char key[5])
 {
-	int       i;
-	long long x;
-
-	x = 0;
-	for (i = 0; i < 4; ++i)
+  int i;
+  long long x;
+  x=0;
+  for (i=0; i<4; i++) 
   {
-		x = x + key[i];
-		x = x << 8;
-	}
-	x = x + key[4];
-	return (x % hash_prime);
-}
-
-size_t  get_sum(int hash_prime, int *mark, int flag_question_nbr)
-{
-  int     i;
-  size_t  sum;
-
-  i = 0;
-  sum = 0;
-  while (i < hash_prime)
-  {
-    if (flag_question_nbr == 1)
-    {
-      if (mark[i] > 1)
-        sum += (mark[i] - 1);
-    }
-    else
-	    sum += (mark[i] * (mark[i] + 1) / 2);
-    ++i;
+    x=x+key[i];
+    x=x<<8;
   }
-  return (sum);
+  x=x+key[4];
+  return x%HASH_PRIME;
 }
 
-size_t  process_m(int hash_prime, char words[5757][5], int flag_question_nbr)
+int sum_col(int n)
 {
-  int    *mark;
-  int     i;
-  size_t  sum;
-
-  mark = malloc(sizeof(int) * hash_prime);
-  if (mark == NULL)
-    exit (1);
-  i = 0;
-  while (i < hash_prime)
+  int i;
+  int col=0;
+  for (i=0; i<n; i++)
   {
-    mark[i] = 0;
-    ++i;
+    if (hash_record[i] != 0)
+      col += hash_record[i]-1;
   }
-  i = 0;
-  while (i < 5757)
-  {
-    ++(mark[get_hash(words[i], hash_prime)]);
-    ++i;
-  }
-  sum = get_sum(hash_prime, mark, flag_question_nbr);
-  free(mark);
-  mark = NULL;
-  return (sum);
+  return col;
 }
 
-int main(void)
+int key_comparisons()
 {
-  char  words[5757][5];
-
-  read_file(words);
-  printf("For all following experiments, the number of words(keys): 5757\n");
-  printf("For HASH_PRIME: 7000(composite), then the number of collisions: ");
-  printf("%ld\n", process_m(7000, words, 1));
-  printf("For HASH_PRIME: 6997(prime), then the number of collisions: ");
-  printf("%ld\n", process_m(6997, words, 1));
-  printf("For HASH_PRIME: 12000(composite), then the number of collisions: ");
-  printf("%ld\n", process_m(12000, words, 1));
-  printf("For HASH_PRIME: 11117(prime), then the number of collisions: ");
-  printf("%ld\n", process_m(11117, words, 1));
-  printf("For HASH_PRIME: 22000(composite), then the number of collisions: ");
-  printf("%ld\n", process_m(22000, words, 1));
-  printf("For HASH_PRIME: 22307(prime), then the number of collisions: ");
-  printf("%ld\n", process_m(22307, words, 1));
-  printf("For HASH_PRIME: 11117, then the number of key comparisons: ");
-  printf("%ld\n", process_m(11117, words, 2));
-  return (0);
+  int i;
+  int sum = 0;
+  for (i=0; i<HASH_PRIME; i++)
+    sum += hash_record[i]*(hash_record[i]+1)/2;
+  return sum;
 }
+    
+
+int main()
+{
+  int i;
+  int cnt=0;
+  char word[100];
+  init_record();
+  FILE *f;
+  f=fopen("words.dat","r");
+  for (i=0; i<5757; i++)
+  {
+    fgets(word,sizeof(word), f);
+    hash_record[hash(word)] += 1;
+  }
+  fclose(f);
+
+  //printf("Hash Prime:%d / Number of collisions:%d\n",HASH_PRIME, sum_col(HASH_PRIME));
+  printf("Hash Prime:%d / Total number of key comparions:%d\n",HASH_PRIME, key_comparisons());
+}
+
+  
+  
