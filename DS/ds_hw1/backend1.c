@@ -3,61 +3,50 @@
 
 #define NUMBER_OF_RECORDS 5
 
-static char g_data_name[NUMBER_OF_RECORDS][3];
-static char g_data_number[NUMBER_OF_RECORDS][4];
-static int g_idx = 0; // index of the first empty slot
+int search_index(char[3]);
+void print_name(int);
+void print_number(int);
+void print_data(char *, int);
 
-static void print_data(char * s, int n)
-{
-  int i;
+// External Variables
 
-  for (i = 0; i < n; ++i)
-    putchar(s[i]);
-}
+char data_name[NUMBER_OF_RECORDS][3];
+char data_number[NUMBER_OF_RECORDS][4];
 
-static void print_name(int i)
-{
-  print_data(g_data_name[i], 3);
-}
-
-static void print_number(int i)
-{
-  print_data(g_data_number[i], 4);
-}
+int k = 0; // index of the first empty slot
 
 void add(char name[3], char number[4])
 {
-  if (g_idx < NUMBER_OF_RECORDS) {
-    g_data_name[g_idx][0]=name[0];
-    g_data_name[g_idx][1]=name[1];
-    g_data_name[g_idx][2]=name[2];
-    g_data_number[g_idx][0]=number[0];
-    g_data_number[g_idx][1]=number[1];
-    g_data_number[g_idx][2]=number[2];
-    g_data_number[g_idx][3]=number[3];
-    print_name(g_idx);
+  if (k < NUMBER_OF_RECORDS)
+  {
+    data_name[k][0] = name[0];
+    data_name[k][1] = name[1];
+    data_name[k][2] = name[2];
+    data_number[k][0] = number[0];
+    data_number[k][1] = number[1];
+    data_number[k][2] = number[2];
+    data_number[k][3] = number[3];
+    print_name(k);
     printf(" : ");
-    print_number(g_idx);
+    print_number(k);
     printf(" was successfully added!\n");
-    ++g_idx;
+    k++;
   }
   else
     printf("Can't add.  Address book is full.\n");
 }
 
-static int search_index(char name[3])
+// Returns the index of the found record.
+// Returns -1, if not found.
+int search_index(char name[3])
 {
-  int i;
-
-  i = 0;
-  while (i < g_idx) {
-    if (g_data_name[i][0] == name[0])
-      if (g_data_name[i][1] == name[1])
-        if (g_data_name[i][2] == name[2])
-          return (i);
-    ++i;
+  int i, j;
+  for (i = 0; i < NUMBER_OF_RECORDS; i++) {
+    if (data_name[i][0] == name[0] && data_name[i][1] == name[1] && data_name[i][2] == name[2]) {
+      return i;
+    }
   }
-  return (-1);
+  return -1;
 }
 
 void search(char name[3])
@@ -67,7 +56,7 @@ void search(char name[3])
   s_result = search_index(name);
   if (s_result == -1)
     printf("Couldn't find the name.\n");
-  else{
+  else {
     print_name(s_result);
     printf(" : ");
     print_number(s_result);
@@ -75,36 +64,53 @@ void search(char name[3])
   }
 }
 
-void delete(char name[3])
+void delete (char name[3])
 {
-  int idx_to_del;
-  int i;
+  // Use search_index()
+  int s_result;
 
-  idx_to_del = search_index(name);
-  i = idx_to_del;
-  while (i < g_idx - 1) {
-    g_data_name[i][0] = g_data_name[i + 1][0];
-    g_data_name[i][1] = g_data_name[i + 1][1];
-    g_data_name[i][2] = g_data_name[i + 1][2];
-    ++i;
+  s_result = search_index(name);
+  if (s_result == -1)
+    printf("Couldn't find the name.\n");
+  else {
+    for (s_result = s_result; s_result < NUMBER_OF_RECORDS-1; s_result++) {
+      data_name[s_result][0] = data_name[s_result+1][0];
+      data_name[s_result][1] = data_name[s_result+1][1];
+      data_name[s_result][2] = data_name[s_result+1][2];
+      data_number[s_result][0] = data_number[s_result+1][0];
+      data_number[s_result][1] = data_number[s_result+1][1];
+      data_number[s_result][2] = data_number[s_result+1][2];
+      data_number[s_result][3] = data_number[s_result+1][3];
+    }
+    k--;
+    printf("The name was successfully deleted.\n");
   }
-  i = idx_to_del;
-  while (i < g_idx - 1) {
-    g_data_number[i][0] = g_data_number[i + 1][0];
-    g_data_number[i][1] = g_data_number[i + 1][1];
-    g_data_number[i][2] = g_data_number[i + 1][2];
-    g_data_number[i][3] = g_data_number[i + 1][3];
-    ++i;
-  }
-  --g_idx;
-  printf("The name was successfully deleted.\n");
+}
+
+// Prints ith name.
+void print_name(int i)
+{
+  print_data(data_name[i], 3);
+}
+
+// Prints ith number.
+void print_number(int i)
+{
+  print_data(data_number[i], 4);
+}
+
+void print_data(char *s, int n)
+{
+  int i;
+  for (i = 0; i < n; i++)
+    putchar(s[i]);
 }
 
 void print_list()
 {
   int i;
-
-  for (i = 0; i < g_idx; ++i) {
+  for (i = 0; i < k; i++)
+  {
     print_name(i);
     printf(" : ");
     print_number(i);
