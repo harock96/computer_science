@@ -26,7 +26,7 @@
 # Database
 
 | Project Name | Topic | Stack | 
-| :-------- | :------| :---: | :-: |
+| :-------- | :------| :---: | 
 | [SQL Practice with Maria DB](https://www.notion.so/24siefil/Maria-DB-and-SQL-Practice-75bb110d7245478a980d25cde6f28e88) | `RDBMS` | SQL |
 | [Programmatic Query with MariaDB Java Connector](https://github.com/24siefil/Computer_Science/tree/main/DB/db_hw2) | `JDBC` | Java |
 | [Spring Boot and REST Interface](https://github.com/24siefil/Computer_Science/tree/main/DB/db_hw3) | `JDBC` | Java |
